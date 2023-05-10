@@ -1,0 +1,33 @@
+{
+	"name": "datamart_update",
+	"properties": {
+		"activities": [
+			{
+				"name": "Update dm_trading_daily",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/trading/datamart/dm_trading_daily"
+				},
+				"linkedServiceName": {
+					"referenceName": "serdiuk_databricks",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "trading_databricks"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-05-08T10:31:54Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
