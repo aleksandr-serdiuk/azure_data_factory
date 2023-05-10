@@ -1,0 +1,206 @@
+{
+	"name": "ds_trading_raw",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_serdiuk_storage",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"p_folder": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "@dataset().p_folder",
+					"type": "Expression"
+				},
+				"fileSystem": "bronze"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "frs_RecOperation",
+				"type": "UTF8"
+			},
+			{
+				"name": "frs_ServerID",
+				"type": "INT32"
+			},
+			{
+				"name": "order",
+				"type": "INT32"
+			},
+			{
+				"name": "login",
+				"type": "INT32"
+			},
+			{
+				"name": "symbol",
+				"type": "UTF8"
+			},
+			{
+				"name": "digits",
+				"type": "INT32"
+			},
+			{
+				"name": "cmd",
+				"type": "INT32"
+			},
+			{
+				"name": "volume",
+				"type": "INT32"
+			},
+			{
+				"name": "open_time",
+				"type": "INT32"
+			},
+			{
+				"name": "state",
+				"type": "INT32"
+			},
+			{
+				"name": "open_price",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 6
+			},
+			{
+				"name": "sl",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 6
+			},
+			{
+				"name": "tp",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 6
+			},
+			{
+				"name": "close_time",
+				"type": "INT32"
+			},
+			{
+				"name": "gw_volume",
+				"type": "INT32"
+			},
+			{
+				"name": "expiration",
+				"type": "INT32"
+			},
+			{
+				"name": "reason",
+				"type": "INT32"
+			},
+			{
+				"name": "conv_rates_open",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 6
+			},
+			{
+				"name": "conv_rates_close",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 6
+			},
+			{
+				"name": "commission",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "commission_agent",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "storage",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "close_price",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 6
+			},
+			{
+				"name": "profit",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "taxes",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "magic",
+				"type": "INT32"
+			},
+			{
+				"name": "comment",
+				"type": "UTF8"
+			},
+			{
+				"name": "gw_order",
+				"type": "INT32"
+			},
+			{
+				"name": "activation",
+				"type": "INT32"
+			},
+			{
+				"name": "gw_open_price",
+				"type": "INT32"
+			},
+			{
+				"name": "gw_close_price",
+				"type": "INT32"
+			},
+			{
+				"name": "margin_rate",
+				"type": "DECIMAL",
+				"precision": 18,
+				"scale": 6
+			},
+			{
+				"name": "timestamp",
+				"type": "INT32"
+			},
+			{
+				"name": "book_type",
+				"type": "INT32"
+			},
+			{
+				"name": "open_spread",
+				"type": "INT32"
+			},
+			{
+				"name": "close_spread",
+				"type": "INT32"
+			},
+			{
+				"name": "parent_order",
+				"type": "INT32"
+			},
+			{
+				"name": "open_volume",
+				"type": "INT32"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
