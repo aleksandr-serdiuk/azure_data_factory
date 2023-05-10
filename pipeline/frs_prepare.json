@@ -1,0 +1,189 @@
+{
+	"name": "frs_prepare",
+	"properties": {
+		"activities": [
+			{
+				"name": "Script",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "synapse",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "/*\nSELECT\n\tCAST(CAST(DATEADD(DAY, c*100+b*10+a, '2023-01-01') AS DATE) AS VARCHAR) dt,\n\tdbo.ux_from_eet(DATEADD(DAY, c*100+b*10+a, '2023-01-01')) ux_start,\n\tdbo.ux_from_eet(DATEADD(DAY, c*100+b*10+a+1, '2023-01-01'))-1 ux_end\nFROM \n\t(SELECT 0 a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a\n\tCROSS JOIN \n\t(SELECT 0 b UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b\n\tCROSS JOIN \n\t(SELECT 0 c UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c\nWHERE\n\tCAST(DATEADD(DAY, c*100+b*10+a, '2023-01-01') AS DATE) < '2023-04-29'\n*/\n\nSELECT\n\tCAST(CAST(DATEADD(DAY, c*100+b*10+a, DATEADD(DAY, -7, GETDATE())) AS DATE) AS VARCHAR) dt,\n\tdbo.ux_from_eet(DATEADD(DAY, c*100+b*10+a, DATEADD(DAY, -7, GETDATE()))) ux_start,\n\tdbo.ux_from_eet(DATEADD(DAY, c*100+b*10+a+1, DATEADD(DAY, -7, GETDATE())))-1 ux_end\nFROM \n\t(SELECT 0 a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a\n\tCROSS JOIN \n\t(SELECT 0 b UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b\n\tCROSS JOIN \n\t(SELECT 0 c UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c\nWHERE\n\tCAST(DATEADD(DAY, c*100+b*10+a, DATEADD(DAY, -7, GETDATE())) AS DATE) < CAST(GETDATE() AS DATE)\n"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "ForEach",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Script",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('script').output.resultSets[0].rows",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "Copy mt4_trade_record",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "@concat('SELECT * FROM frs_ai_live.mt4_trade_record \r\nWHERE open_time BETWEEN ', item()['ux_start'], ' AND ', item()['ux_end'],\r\n'OR close_time BETWEEN ', item()['ux_start'], ' AND ', item()['ux_end']\r\n)",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "AzureSynapse",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "container_bronze",
+									"type": "DatasetReference",
+									"parameters": {
+										"file_name": {
+											"value": "@concat('mt4_trade_record','.parquet')",
+											"type": "Expression"
+										},
+										"file_path": {
+											"value": "@concat('trade','/',item()['dt'])",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Copy mt5_deal",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "@concat('SELECT * FROM frs_ai_live.mt5_deal\r\nWHERE [Time] BETWEEN ', item()['ux_start'], ' AND ', item()['ux_end']\r\n)",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "AzureSynapse",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "container_bronze",
+									"type": "DatasetReference",
+									"parameters": {
+										"file_name": {
+											"value": "@concat('mt5_deal','.parquet')",
+											"type": "Expression"
+										},
+										"file_path": {
+											"value": "@concat('trade','/',item()['dt'])",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "trading_databricks"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-05-05T06:35:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

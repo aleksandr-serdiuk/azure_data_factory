@@ -1,0 +1,113 @@
+{
+	"name": "ingest_dict",
+	"properties": {
+		"activities": [
+			{
+				"name": "Ingest CRM client",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/trading/ingestion/crm/ingest_client"
+				},
+				"linkedServiceName": {
+					"referenceName": "serdiuk_databricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Ingest CRM country",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/trading/ingestion/crm/ingest_country"
+				},
+				"linkedServiceName": {
+					"referenceName": "serdiuk_databricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Ingest SSOR currency_rates",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/trading/ingestion/ssor/ingest_currency_rates"
+				},
+				"linkedServiceName": {
+					"referenceName": "serdiuk_databricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Ingest Trading account",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/trading/ingestion/trade/ingest_trading_account"
+				},
+				"linkedServiceName": {
+					"referenceName": "serdiuk_databricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Ingest Trading instrument",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/trading/ingestion/trade/ingest_trading_instrument"
+				},
+				"linkedServiceName": {
+					"referenceName": "serdiuk_databricks",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "trading_databricks"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-05-05T09:40:42Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

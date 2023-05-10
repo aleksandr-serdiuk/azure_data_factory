@@ -1,0 +1,117 @@
+{
+	"name": "WF main",
+	"properties": {
+		"activities": [
+			{
+				"name": "dict_prepare",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "dict_prepare",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "frs_prepare",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "frs_prepare",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ingest_dict",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "dict_prepare",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "frs_prepare",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ingest_dict",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ingest_trading_data",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "dict_prepare",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "frs_prepare",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ingest_trading_data",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "datamart_update",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ingest_dict",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ingest_trading_data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "datamart_update",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "trading_databricks"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-05-08T10:32:37Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

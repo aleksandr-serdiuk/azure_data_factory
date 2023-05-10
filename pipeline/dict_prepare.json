@@ -1,0 +1,125 @@
+{
+	"name": "dict_prepare",
+	"properties": {
+		"activities": [
+			{
+				"name": "Script",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "synapse",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "SELECT 'frs_ai_live' [schema], 'mt4_con_group' [table], 'dict' folder\nUNION ALL SELECT 'frs_ai_live', 'mt4_con_symbol', 'dict'\nUNION ALL SELECT 'frs_ai_live', 'mt4_con_symbol_group', 'dict'\nUNION ALL SELECT 'frs_ai_live', 'mt4_user_record', 'dict'\nUNION ALL SELECT 'frs_ai_live', 'mt5_con_group', 'dict'\nUNION ALL SELECT 'frs_ai_live', 'mt5_con_group_symbol', 'dict'\nUNION ALL SELECT 'frs_ai_live', 'mt5_con_symbol', 'dict'\nUNION ALL SELECT 'frs_ai_live', 'mt5_user', 'dict'\n\nUNION ALL SELECT 'my_ai', 'client', 'crm'\nUNION ALL SELECT 'my_ai', 'country', 'crm'\n\nUNION ALL SELECT 'consolidated', 'currency_rates', 'ssor'"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "ForEach",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Script",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('script').output.resultSets[0].rows",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "Copy dict table",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "@concat('SELECT * FROM ', item()['schema'], '.',item()['table']\n)",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "AzureSynapse",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "container_bronze",
+									"type": "DatasetReference",
+									"parameters": {
+										"file_name": {
+											"value": "@concat(item()['table'],'.parquet')\n",
+											"type": "Expression"
+										},
+										"file_path": {
+											"value": "@item()['folder']",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "trading_databricks"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-05-05T06:35:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
